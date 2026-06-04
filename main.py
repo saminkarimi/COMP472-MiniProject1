@@ -1,7 +1,7 @@
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import pipeline 
+from transformers import pipeline
 
 def load_knowledge_base(file_path):
     data = pd.read_csv(file_path)
@@ -27,7 +27,10 @@ def find_best_answer(user_question):
 
     best_match_index = similarities.argmax()
 
-    return answers[best_match_index]
+    answer = answers[best_match_index]
+    similarity_score = similarities[0][best_match_index]
+
+    return answer, similarity_score
 
 def analyze_sentiment(user_question):
     result = sentiment_analyzer(user_question)[0]
@@ -54,12 +57,12 @@ while True:
     print("\nSentiment:", label)
     print("Confidence Score:", round(score, 2))
 
-    if label == "NEGATIVE" and score > 0.9:
-        print("Recommended escalation: Contact human advisor.")
+    answer, similarity_score = find_best_answer(user_question)
+
+    if label == "NEGATIVE" and score > 0.9 and similarity_score < 0.40:
+        print("We recommend contacting a human advisor.")
 
     else:
-        answer = find_best_answer(user_question)
-
         print("\nAnswer:")
         print(answer)
 
