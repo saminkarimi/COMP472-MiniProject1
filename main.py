@@ -15,10 +15,7 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 question_embeddings = model.encode(questions)
 
-sentiment_analyzer = pipeline(
-    "sentiment-analysis",
-    model="cardiffnlp/twitter-roberta-base-sentiment-latest"
-)
+sentiment_analyzer = pipeline("sentiment-analysis")
 
 def find_best_answer(user_question):
     user_embedding = model.encode([user_question])
@@ -35,7 +32,7 @@ def find_best_answer(user_question):
 def analyze_sentiment(user_question):
     result = sentiment_analyzer(user_question)[0]
 
-    label = result["label"].upper()
+    label = result["label"]
     score = result["score"]
 
     return label, score
@@ -44,33 +41,26 @@ def analyze_sentiment(user_question):
 print("\nWelcome to Student Support AI")
 print("Type 'quit' to exit.\n")
 
-conversation_history = []
-
 while True:
-    user_question = input("You: ").strip()
+
+    user_question = input("Ask a question: ")
 
     if user_question.lower() == "quit":
         print("Goodbye!")
         break
 
-    if user_question == "":
-        print("Please enter a question.\n")
-        continue
-
     label, score = analyze_sentiment(user_question)
-    answer = find_best_answer(user_question)
 
-    print(f"Sentiment: {label} ({score:.2f})")
+    print("\nSentiment:", label)
+    print("Confidence Score:", round(score, 2))
 
     if label == "NEGATIVE" and score > 0.9:
         print("Recommended escalation: Contact human advisor.")
 
-    print("Answer:", answer)
-    print()
+    else:
+        answer = find_best_answer(user_question)
 
-    conversation_history.append({
-        "question": user_question,
-        "sentiment": label,
-        "score": score,
-        "answer": answer
-    })
+        print("\nAnswer:")
+        print(answer)
+
+    print()
