@@ -15,7 +15,10 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 question_embeddings = model.encode(questions)
 
-sentiment_analyzer = pipeline("sentiment-analysis")
+sentiment_analyzer = pipeline(
+    "sentiment-analysis",
+    model="cardiffnlp/twitter-roberta-base-sentiment-latest"
+)
 
 def find_best_answer(user_question):
     user_embedding = model.encode([user_question])
@@ -35,7 +38,7 @@ def find_best_answer(user_question):
 def analyze_sentiment(user_question):
     result = sentiment_analyzer(user_question)[0]
 
-    label = result["label"]
+    label = result["label"].upper()
     score = result["score"]
 
     return label, score
@@ -59,11 +62,10 @@ while True:
 
     answer, similarity_score = find_best_answer(user_question)
 
-    if label == "NEGATIVE" and score > 0.9 and similarity_score < 0.40:
+    if label == "NEGATIVE" and score > 0.9:
         print("We recommend contacting a human advisor.")
 
-    else:
-        print("\nAnswer:")
-        print(answer)
+    print("\nAnswer:")
+    print(answer)
 
     print()
